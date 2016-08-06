@@ -22,14 +22,14 @@ describe('Links', () => {
         assert.equal(match[0], 'https://example.com/2')
     })
     it('by domain', () => {
-        const locals = ['https://localhost/', 'http://steemit.com', 'http://steemit.com/group']
+        const locals = ['https://localhost/', 'http://steemit.vlj.lt', 'http://steemit.vlj.lt/group']
         match(linksRe.local(), locals)
         matchNot(linksRe.remote(), locals)
 
         const remotes = ['https://example.com/', 'http://abc.co']
         match(linksRe.remote(), remotes)
         matchNot(linksRe.local(), remotes)
-        // match(linksRe({external: false}), largeData + 'https://steemit.com2/next', 'https://steemit.com2/next')
+        // match(linksRe({external: false}), largeData + 'https://steemit.vlj.lt2/next', 'https://steemit.vlj.lt2/next')
     })
     it('by image', () => {
         match(linksRe.image(), 'https://example.com/a.jpeg')

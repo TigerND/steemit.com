@@ -82,7 +82,7 @@ class LoginForm extends Component {
                     <div className="callout alert">
                         <h4>Cryptography test failed</h4>
                         <p>We will be unable to log you in with this browser.</p>
-                        <p>The latest versions of <a href="https://www.google.com/chrome/">Chrome</a> and <a href="https://www.mozilla.org/en-US/firefox/new/">Firefox</a> are well tested and known to work with steemit.com.</p>
+                        <p>The latest versions of <a href="https://www.google.com/chrome/">Chrome</a> and <a href="https://www.mozilla.org/en-US/firefox/new/">Firefox</a> are well tested and known to work with steemit.vlj.lt.</p>
                     </div>
                 </div>
             </div>;

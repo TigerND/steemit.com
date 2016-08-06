@@ -57,7 +57,7 @@ function img(state, child) {
     }
 }
 
-// For all img elements with non-local URLs, prepend the proxy URL (e.g. `https://img0.steemit.com/0x0/`)
+// For all img elements with non-local URLs, prepend the proxy URL (e.g. `https://img0.steemit.vlj.lt/0x0/`)
 function proxifyImages(doc) {
     if (!$STM_Config.img_proxy_prefix) return
     [...doc.getElementsByTagName('img')].forEach(node => {
@@ -127,7 +127,7 @@ function embedYouTubeNode(child, large, links) {try{
         const match = url.match(linksRe.youTubeId)
         if(match && match.length >= 2) {
             const id = match[1]
-            const src = `//www.youtube.com/embed/${id}?enablejsapi=0&rel=0&origin=https://steemit.com`
+            const src = `//www.youtube.com/embed/${id}?enablejsapi=0&rel=0&origin=https://steemit.vlj.lt`
             const v = DOMParser.parseFromString(`<!--split--><div key="${id}" class="videoWrapper">
                 <iframe width="${large ? '640' : '384'}" height="${large ? 360 : 240}" src="${src}" frameBorder="0" allowFullScreen="true"></iframe>
             </div><!--split-->`)
@@ -143,7 +143,7 @@ function embedYouTubeNode(child, large, links) {try{
 
 function ipfsPrefix(url) {
     if($STM_Config.ipfs_prefix) {
-        // Convert //ipfs/xxx  or /ipfs/xxx  into  https://steemit.com/ipfs/xxxxx
+        // Convert //ipfs/xxx  or /ipfs/xxx  into  https://steemit.vlj.lt/ipfs/xxxxx
         if(/^\/?\/ipfs\//.test(url)) {
             const slash = url.charAt(1) === '/' ? 1 : 0
             url = url.substring(slash + '/ipfs/'.length) // start with only 1 /

@@ -7,7 +7,7 @@ class Support extends React.Component {
                 <div>
                     <h2>Steemit Support</h2>
                     <p>
-                        Please email your questions to <a href="mailto:support@steemit.com">support@steemit.com</a>.
+                        Please email your questions to <a href="mailto:support@steemit.vlj.lt">support@steemit.vlj.lt</a>.
                     </p>
                 </div>
             </div>

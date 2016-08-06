@@ -146,7 +146,7 @@ export default class PostFull extends React.Component {
             net_rshares.compare(Long.ZERO) <= 0
 
         this.share_params = {
-            url: 'https://steemit.com' + link,
+            url: 'https://steemit.vlj.lt' + link,
             title: title + ' — Steemit',
             desc: p.desc
         };

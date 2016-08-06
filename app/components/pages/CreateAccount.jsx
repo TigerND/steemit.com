@@ -169,7 +169,7 @@ class CreateAccount extends React.Component {
                     <div className="callout alert">
                         <h4>Cryptography test failed</h4>
                         <p>We will be unable to create your Steem account with this browser.</p>
-                        <p>The latest versions of <a href="https://www.google.com/chrome/">Chrome</a> and <a href="https://www.mozilla.org/en-US/firefox/new/">Firefox</a> are well tested and known to work with steemit.com.</p>
+                        <p>The latest versions of <a href="https://www.google.com/chrome/">Chrome</a> and <a href="https://www.mozilla.org/en-US/firefox/new/">Firefox</a> are well tested and known to work with steemit.vlj.lt.</p>
                     </div>
                 </div>
             </div>;
@@ -198,7 +198,7 @@ class CreateAccount extends React.Component {
                         <p>Our records indicate that you already have steem account: <strong>{existingUserAccount}</strong></p>
                         <p>In order to prevent abuse (each registered account costs 3 STEEM) Steemit can only register one account per verified user.</p>
                         <p>You can either <a href="/login.html">login</a> to your existing account
-                           or <a href="mailto:support@steemit.com">send us email</a> if you need a new account.</p>
+                           or <a href="mailto:support@steemit.vlj.lt">send us email</a> if you need a new account.</p>
                     </div>
                 </div>
             </div>;

@@ -170,10 +170,6 @@ function* usernamePasswordLogin2({payload: {username, password, saveLogin,
         const owner_pub_key = account.getIn(['owner', 'key_auths', 0, 0]);
         // const pub_keys = yield select(state => state.user.get('pub_keys_used'))
         // serverApiRecordEvent('login_attempt', JSON.stringify({name: username, ...pub_keys, cur_owner: owner_pub_key}))
-        if (owner_pub_key === 'STM7sw22HqsXbz7D2CmJfmMwt9rimtk518dRzsR1f8Cgw52dQR1pR') {
-            yield put(user.actions.loginError({ error: 'Hello. Your account may have been compromised. We are working on restoring an access to your account. Please send an email to support@steemit.com.' }))
-            return
-        }
         if(login_owner_pubkey === owner_pub_key || login_wif_owner_pubkey === owner_pub_key) {
             yield put(user.actions.loginError({ error: 'owner_login_blocked' }))
         } else {

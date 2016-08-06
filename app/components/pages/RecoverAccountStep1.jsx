@@ -141,7 +141,7 @@ class RecoverAccountStep1 extends React.Component {
                     this.setState({email_submitted: true});
                 }
                 if (res.status === 'duplicate') {
-                    this.setState({email_error: 'Your request has been already submitted and we are working on it. Please contact support@steemit.com for the status of your request.'});
+                    this.setState({email_error: 'Your request has been already submitted and we are working on it. Please contact support@steemit.vlj.lt for the status of your request.'});
                 }
             }
         }).catch(error => {
@@ -165,7 +165,7 @@ class RecoverAccountStep1 extends React.Component {
                             From time to time, a Steemian’s owner key may be compromised.
                             Stolen Account Recovery gives the rightful account owner 30 days
                             to recover their account from the moment the thief changed their
-                            owner key.  Stolen Account Recovery can only be used on steemit.com
+                            owner key.  Stolen Account Recovery can only be used on steemit.vlj.lt
                             if the account owner had perviously listed ‘Steemit’ as their
                             account trustee and complied with Steemit’s Terms of Service.
                         </p>
