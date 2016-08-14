@@ -1,8 +1,8 @@
 {
-  "name": "Steemit.com",
+  "name": "steemit.vlj.lt",
   "repository": {
     "type": "git",
-    "url": "https://github.com/steemit/steemit.com.git"
+    "url": "https://github.com/TigerND/steemit.com.git"
   },
   "version": "1.0.0",
   "description": "",
