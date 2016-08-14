@@ -1,5 +1,4 @@
 import webpack from 'webpack';
-import git from 'git-rev-sync';
 import ExtractTextPlugin from 'extract-text-webpack-plugin';
 // import PurifyCSSPlugin from 'bird3-purifycss-webpack-plugin';
 
@@ -35,7 +34,7 @@ export default {
             'process.env': {
                 BROWSER: JSON.stringify(true),
                 NODE_ENV: JSON.stringify('production'),
-                VERSION: JSON.stringify(git.tag())
+                VERSION: JSON.stringify('steemit.vlj.lt')
             },
             global: {
                 TYPED_ARRAY_SUPPORT: JSON.stringify(false)
