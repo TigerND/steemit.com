@@ -1,11 +1,9 @@
 import {Map, Set, List, fromJS, Iterable} from 'immutable';
 import createModule from 'redux-modules';
-import {PropTypes} from 'react';
 import {emptyContent} from 'app/redux/EmptyState';
 import constants from './constants';
 import {contentStats} from 'app/utils/StateFunctions'
 
-const {string, object, bool, array, oneOf, oneOfType, func, any} = PropTypes
 const emptyContentMap = Map(emptyContent)
 
 export default createModule({
@@ -24,7 +22,6 @@ export default createModule({
         },
         {
             action: 'RECEIVE_STATE',
-            // payloadTypes: { },
             reducer: (state, action) => {
                 // console.log('RECEIVE_STATE', action, state.toJS());
                 let payload = fromJS(action.payload)
@@ -44,9 +41,6 @@ export default createModule({
         },
         {
             action: 'RECEIVE_ACCOUNT',
-            payloadTypes: {
-                account: object.isRequired,
-            },
             reducer: (state, {payload: {account}}) => {
                 account = fromJS(account, (key, value) => {
                     if (key === 'witness_votes') return value.toSet()
@@ -59,14 +53,6 @@ export default createModule({
         },
         {
             action: 'RECEIVE_COMMENT',
-            payloadTypes: {
-                author: string.isRequired,
-                permlink: string.isRequired,
-                body: object.isRequired, // Buffer
-                title: object, // Buffer
-                parent_permlink: string,
-                parent_author: string,
-            },
             reducer: (state, {payload: op}) => {
                 const {author, permlink, parent_author = '', parent_permlink = '', title = '', body} = op
                 const key = author + '/' + permlink
@@ -88,9 +74,6 @@ export default createModule({
         },
         {
             action: 'RECEIVE_CONTENT',
-            payloadTypes: {
-                content: object.isRequired, // full content object (replace from the blockchain)
-            },
             reducer: (state, {payload: {content}}) => {
                 // console.log('GlobalReducer -- RECEIVE_CONTENT content', content)
                 content = fromJS(content)
@@ -106,12 +89,6 @@ export default createModule({
         },
         { // works...
             action: 'LINK_REPLY',
-            payloadTypes: {
-                author: string.isRequired,
-                permlink: string.isRequired,
-                parent_permlink: string,
-                parent_author: string,
-            },
             reducer: (state, {payload: op}) => {
                 const {author, permlink, parent_author = '', parent_permlink = ''} = op
                 if (parent_author === '' || parent_permlink === '') return state
@@ -124,20 +101,12 @@ export default createModule({
         },
         { // works...
             action: 'UPDATE_ACCOUNT_WITNESS_VOTE',
-            payloadTypes: {
-                witness: string.isRequired,
-                approve: bool.isRequired,
-            },
             reducer: (state, {payload: {account, witness, approve}}) =>
                 state.updateIn(['accounts', account, 'witness_votes'], Set(),
                     votes => (approve ? Set(votes).add(witness) : Set(votes).remove(witness)))
         },
         {
             action: 'DELETE_CONTENT',
-            payloadTypes: {
-                author: string.isRequired,
-                permlink: string.isRequired,
-            },
             reducer: (state, {payload: {author, permlink}}) => {
                 const key = author + '/' + permlink
                 const content = state.getIn(['content', key])
@@ -184,11 +153,12 @@ export default createModule({
                 let new_state;
                 if (order === 'by_author' || order === 'by_feed') {
                     const by_feed = order === 'by_feed'
+                    // in this case, category is either "blog" or "feed"
                     const key = ['accounts', by_feed ? accountname : author, category]
                     new_state = state.updateIn(key, List(), list => {
                         return list.withMutations(posts => {
                             data.forEach(value => {
-                                const key2 = by_feed ? `${value.author}/${value.permlink}` : value.permlink
+                                const key2 = `${value.author}/${value.permlink}`
                                 if (!posts.includes(key2)) posts.push(key2);
                             });
                         });
@@ -256,28 +226,16 @@ export default createModule({
         },
         {
             action: 'REQUEST_META', // browser console debug
-            payloadTypes: {
-                id: string.isRequired,
-                link: string.isRequired,
-            },
             reducer: (state, {payload: {id, link}}) =>
                 state.setIn(['metaLinkData', id], Map({link}))
         },
         {
             action: 'RECEIVE_META', // browser console debug
-            payloadTypes: {
-                id: string.isRequired,
-                meta: object.isRequired,
-            },
             reducer: (state, {payload: {id, meta}}) =>
                 state.updateIn(['metaLinkData', id], data => data.merge(meta))
         },
         {
             action: 'SET',
-            payloadTypes: {
-                key: oneOfType([array, string]).isRequired,
-                value: any,
-            },
             reducer: (state, {payload: {key, value}}) => {
                 key = Array.isArray(key) ? key : [key]
                 return state.setIn(key, fromJS(value))
@@ -285,9 +243,6 @@ export default createModule({
         },
         {
             action: 'REMOVE',
-            payloadTypes: {
-                key: oneOfType([array, string]).isRequired,
-            },
             reducer: (state, {payload: {key}}) => {
                 key = Array.isArray(key) ? key : [key]
                 return state.removeIn(key)
@@ -295,75 +250,41 @@ export default createModule({
         },
         {
             action: 'UPDATE',
-            payloadTypes: {
-                key: any.isRequired,
-                notSet: any,
-                updater: any,
-            },
             reducer: (state, {payload: {key, notSet = Map(), updater}}) =>
                 // key = Array.isArray(key) ? key : [key] // TODO enable and test
                 state.updateIn(key, notSet, updater)
         },
         {
             action: 'SET_META_DATA', // browser console debug
-            payloadTypes: {
-                id: string.isRequired,
-                meta: object,
-            },
             reducer: (state, {payload: {id, meta}}) =>
                 state.setIn(['metaLinkData', id], fromJS(meta))
         },
         {
             action: 'CLEAR_META', // browser console debug
-            payloadTypes: {
-                id: string.isRequired,
-            },
             reducer: (state, {payload: {id}}) =>
                 state.deleteIn(['metaLinkData', id])
         },
         {
             action: 'CLEAR_META_ELEMENT', // browser console debug
-            payloadTypes: {
-                formId: string.isRequired,
-                element: oneOf(['description', 'image']).isRequired,
-            },
             reducer: (state, {payload: {formId, element}}) =>
                 state.updateIn(['metaLinkData', formId], data => data.remove(element))
         },
         {
             action: 'FETCH_JSON',
-            payloadTypes: {
-                id: string.isRequired,
-                url: string.isRequired,
-                body: object,
-                successCallback: func,
-            },
             reducer: state => state // saga
         },
         {
             action: 'FETCH_JSON_RESULT',
-            payloadTypes: {
-                id: string.isRequired,
-                result: any,
-                error: object,
-            },
             reducer: (state, {payload: {id, result, error}}) =>
                 state.set(id, fromJS({result, error}))
         },
         {
             action: 'SHOW_DIALOG',
-            payloadTypes: {
-                name: string.isRequired,
-                params: object,
-            },
             reducer: (state, {payload: {name, params = {}}}) =>
                 state.update('active_dialogs', Map(), d => d.set(name, fromJS({params})))
         },
         {
             action: 'HIDE_DIALOG',
-            payloadTypes: {
-                name: string.isRequired,
-            },
             reducer: (state, {payload: {name}}) =>
                 state.update('active_dialogs', d => d.delete(name))
         },

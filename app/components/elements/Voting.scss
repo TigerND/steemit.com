@@ -17,24 +17,26 @@
   }
 }
 
+.Voting__about-flag {
+    margin-right: 30px;
+}
+
 .Voting__button-up {
-  .Icon {
-    top: 4px;
-  }
   .Icon {
     margin-left: 0;
   }
   > a {
     padding-right: 0.5rem;
   }
-  > a:hover {
-    path {
-      fill: #333;
-    }
-    circle {
-      fill: #fff;
-      stroke: #333;
-    }
+}
+
+.Voting__button-up > a:hover, a.confirm_weight:hover {
+  path {
+    fill: #333;
+  }
+  circle {
+    fill: #fff;
+    stroke: #333;
   }
 }
 
@@ -136,18 +138,49 @@
   }
 }
 
-.Voting__adjust_weight {
-  padding: 10px;
-  padding-bottom: 0;
-  .weight-display {
-    text-align: center;
-    color: $dark-gray;
-  }
+.Voting__adjust_weight_down {
+    @extend .Voting__adjust_weight;
+
+    right: 0;
+    width: auto !important;
+    max-width: 500px;
+
+    div.clear {
+      clear: both;
+    }
+    p, span {
+      white-space: normal !important;
+    }
+    .weight-display {
+      color: #C00 !important;
+    }
+    .rangeslider {
+      margin-right: 2rem;
+    }
 }
 
 .Voting__adjust_weight {
+  padding: 10px 20px;
+  margin-right: 10px;
+  width: 350px;
+  overflow: hidden;
+  .weight-display {
+    width: 3rem;
+    float: left;
+    margin-right: 0.5rem;
+    text-align: right;
+    color: $dark-gray;
+    line-height: 2.6rem;
+  }
+  a.confirm_weight {
+    float: left;
+    width: 2rem;
+    height: 2rem;
+    line-height: 2.6rem;
+  }
   .rangeslider {
     position: relative;
+    float: left;
     background: #e6e6e6;
     .rangeslider__fill, .rangeslider__handle {
       position: absolute;
@@ -164,41 +197,58 @@
       display: inline-block;
       position: absolute;
       &:active {
-        background: #999;
+        background: #4ba2f2;
       }
     }
   }
-  .rangeslider-vertical {
-    margin: 0 auto;
-    height: 150px;
-    max-width: 10px;
+  .rangeslider-horizontal {
+    height: 10px;
+    width: 200px;
     background: none;
+    float: left;
+    margin-top: 18px;
     .rangeslider__fill {
-      width: 100%;
+      height: 100%;
       background: #4ba2f2;
       box-shadow: none;
-      bottom: 0;
+      left: 0;
     }
     .rangeslider__handle {
       width: 30px;
       height: 30px;
       border-radius: 50%;
-      left: -10px;
+      top: -10px;
       &:active {
         box-shadow: none;
       }
     }
   }
+  .Voting__adjust_weight_close {
+    position: static;
+    line-height: 2.6rem;
+    font-size: 2rem;
+    margin-left: 1rem;
+  }
+}
 
-  .button {
-    color: #fff;
-    &:hover {
-      text-decoration: none;
+
+@media screen and (max-width: 39.9375em) {
+  .Voting__button-up {
+    .dropdown-pane {
+      margin-top: -36px;
+      margin-left: -10px;
     }
   }
 }
 
-.Voting__button-up {
-  display: inline-block;
-  position: relative;
+/* Medium and bigger */
+@media screen and (min-width: 39.9375em) {
+  .Voting__button-up {
+    display: inline-block;
+    position: relative;
+    .dropdown-pane {
+      top: -18px;
+      left: -28px;
+    }
+  }
 }

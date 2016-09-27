@@ -17,10 +17,12 @@ class UserWallet extends React.Component {
         super()
         this.state = {}
         this.onShowDeposit = () => {this.setState({showDeposit: !this.state.showDeposit})}
-        this.onShowDepositSteem = () => {
+        this.onShowDepositSteem = (e) => {
+            e.preventDefault()
             this.setState({showDeposit: !this.state.showDeposit, depositType: 'STEEM'})
         }
-        this.onShowDepositPower = () => {
+        this.onShowDepositPower = (e) => {
+            e.preventDefault()
             this.setState({showDeposit: !this.state.showDeposit, depositType: 'VESTS'})
         }
         // this.onShowDeposit = this.onShowDeposit.bind(this)
@@ -75,7 +77,7 @@ class UserWallet extends React.Component {
         const transfer_log = account.transfer_history.map(item => {
             const data = item[1].op[1]
             // Filter out rewards
-            if (item[1].op[0] === "curate_reward" || item[1].op[0] === "comment_reward") {
+            if (item[1].op[0] === "curation_reward" || item[1].op[0] === "author_reward") {
                 return null;
             }
 
@@ -119,15 +121,19 @@ class UserWallet extends React.Component {
         const sbd_balance_str = numberWithCommas('$' + sbd_balance.toFixed(3)) // formatDecimal(account.sbd_balance, 3)
         return (<div className="UserWallet">
             <div className="row">
-                <div className="column small-12">
+                <div className="column small-12 medium-8">
                     <h4>BALANCES</h4>
                 </div>
+                {isMyAccount && <div className="column small-12 medium-4">
+                    <button className="UserWallet__buysp button hollow float-right " onClick={this.onShowDepositSteem}>Buy Steem or Steem Power</button>
+                </div>}
             </div>
+            <br />
             <div className="UserWallet__balance row">
                 <div className="column small-12 medium-8">
                     STEEM<br /><span className="secondary">{steemTip.split(".").map((a, index) => {if (a) {return <div key={index}>{a}.</div>;} return null;})}</span>
                 </div>
-                <div className="column small-12 medium-3">
+                <div className="column small-12 medium-4">
                     {isMyAccount ?
                     <DropdownMenu selected={steem_balance_str + ' STEEM'} className="Header__sort-order-menu" items={steem_menu} el="span" />
                     : steem_balance_str + ' STEEM'}
@@ -137,7 +143,7 @@ class UserWallet extends React.Component {
                 <div className="column small-12 medium-8">
                     STEEM POWER<br /><span className="secondary">{powerTip.split(".").map((a, index) => {if (a) {return <div key={index}>{a}.</div>;} return null;})}</span>
                 </div>
-                <div className="column small-12 medium-3">
+                <div className="column small-12 medium-4">
                     {isMyAccount ?
                     <DropdownMenu selected={power_balance_str + ' STEEM'} className="Header__sort-order-menu" items={power_menu} el="span" />
                     : power_balance_str + ' STEEM'}
@@ -147,7 +153,7 @@ class UserWallet extends React.Component {
                 <div className="column small-12 medium-8">
                     STEEM DOLLARS<br /><span className="secondary">{dollarTip}</span>
                 </div>
-                <div className="column small-12 medium-3">
+                <div className="column small-12 medium-4">
                     {isMyAccount ?
                     <DropdownMenu selected={sbd_balance_str} items={dollar_menu} el="span" />
                     : sbd_balance_str}
@@ -163,7 +169,7 @@ class UserWallet extends React.Component {
                 <div className="column small-12 medium-8">
                     Estimated Account Value<br /><span className="secondary">{valueTip}</span>
                 </div>
-                <div className="column small-12 medium-3">
+                <div className="column small-12 medium-4">
                     {total_value}
                 </div>
             </div>
@@ -220,7 +226,8 @@ export default connect(
     },
     // mapDispatchToProps
     dispatch => ({
-        convertToSteem: () => {
+        convertToSteem: (e) => {
+            e.preventDefault()
             const name = 'convertToSteem'
             dispatch(g.actions.showDialog({name}))
         },

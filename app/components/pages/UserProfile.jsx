@@ -36,7 +36,14 @@ export default class UserProfile extends React.Component {
     loadMore(last_post, category) {
         const {accountname} = this.props.routeParams
         if (!last_post) return;
-        const order = category === 'feed' ? 'by_feed' : 'by_author';
+
+        let order;
+        switch(category) {
+          case "feed": order = 'by_feed'; break;
+          case "blog": order = 'by_author'; break;
+          default: console.log("unhandled category:", category);
+        }
+
         if (isFetchingOrRecentlyUpdated(this.props.global.get('status'), order, category)) return;
         const [author, permlink] = last_post.split('/');
         this.props.requestData({author, permlink, order, category, accountname});
@@ -140,7 +147,7 @@ export default class UserProfile extends React.Component {
            if( account.posts )
            {
               tab_content = <PostsList
-                  emptyText={`Looks like ${account.name} hasn't made any posts yet!`}
+                  emptyText={`Looks like ${account.name} hasn't made any comments yet!`}
                   posts={account.posts.map(p => `${account.name}/${p}`)}
                   loading={fetching}
                   category="posts"
@@ -154,9 +161,7 @@ export default class UserProfile extends React.Component {
             if (account.blog) {
                 tab_content = <PostsList
                     emptyText={`Looks like ${account.name} hasn't started blogging yet!`}
-                    posts={account.blog.filter(p => {
-                        return !(p.indexOf("re-") === 0 && p[p.length - 1] === "z");
-                    }).map(p => `${account.name}/${p}`)}
+                    posts={account.blog}
                     loading={fetching}
                     category="blog"
                     loadMore={this.loadMore}
@@ -164,27 +169,28 @@ export default class UserProfile extends React.Component {
             } else {
                 tab_content = (<center><LoadingIndicator type="circle" /></center>);
             }
-        } else if(!section || section === 'feed') {
-            if (account.feed) {
-                tab_content = <PostsList
-                    emptyText={`Looks like ${account.name} hasn't followed anything yet!`}
-                    posts={account.feed}
-                    loading={fetching}
-                    category="feed"
-                    loadMore={this.loadMore}
-                    showSpam />;
-            } else {
-                tab_content = (<center><LoadingIndicator type="circle" /></center>);
-            }
         }
+        // else if(!section || section === 'feed') {
+        //     if (account.feed) {
+        //         tab_content = <PostsList
+        //             emptyText={`Looks like ${account.name} hasn't followed anything yet!`}
+        //             posts={account.feed}
+        //             loading={fetching}
+        //             category="feed"
+        //             loadMore={this.loadMore}
+        //             showSpam />;
+        //     } else {
+        //         tab_content = (<center><LoadingIndicator type="circle" /></center>);
+        //     }
+        // }
         else if( (section === 'recent-replies') && account.recent_replies ) {
-           const reply_summary = account.recent_replies.map( item => {
-               return (<li style={{listStyleType: 'none'}} key={item}>
-                   <PostSummary post={item} currentCategory="-" />
-               </li>);
-            });
-            tab_content = reply_summary.length ? reply_summary :
-                <div>{account.name} hasn't had any replies yet.</div>;
+              tab_content = <PostsList
+                  emptyText={`${account.name} hasn't had any replies yet.`}
+                  posts={account.recent_replies}
+                  loading={fetching}
+                  category="recent-replies"
+                  loadMore={null}
+                  showSpam={false} />;
         }
         else if( section === 'permissions' && isMyAccount ) {
             tab_content = <UserKeys account={accountImm} />
@@ -230,9 +236,9 @@ export default class UserProfile extends React.Component {
             <div className="columns small-10 medium-12 medium-expand">
                 <ul className="menu" style={{flexWrap: "wrap"}}>
                     <li><Link to={`/@${accountname}`} activeClassName="active">Blog</Link></li>
-                    <li><Link to={`/@${accountname}/posts`} activeClassName="active">Posts</Link></li>
+                    <li><Link to={`/@${accountname}/posts`} activeClassName="active">Comments</Link></li>
                     <li><Link to={`/@${accountname}/recent-replies`} activeClassName="active">Replies</Link></li>
-                    <li><Link to={`/@${accountname}/feed`} activeClassName="active">Feed</Link></li>
+                    {/*<li><Link to={`/@${accountname}/feed`} activeClassName="active">Feed</Link></li>*/}
                     <li>
                         <LinkWithDropdown
                             closeOnClickOutside
@@ -244,7 +250,7 @@ export default class UserProfile extends React.Component {
                         >
                             <a className={rewardsClass}>
                                 Rewards
-                                <Icon className="dropdown-arrow" name="dropdown-arrow" />
+                                <Icon name="dropdown-arrow" />
                             </a>
                         </LinkWithDropdown>
                     </li>

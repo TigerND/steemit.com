@@ -9,6 +9,7 @@ import { connect } from 'react-redux';
 import user from 'app/redux/User';
 import transaction from 'app/redux/Transaction'
 import Voting from 'app/components/elements/Voting';
+import Reblog from 'app/components/elements/Reblog';
 import Tooltip from 'app/components/elements/Tooltip';
 import MarkdownViewer from 'app/components/cards/MarkdownViewer';
 import ReplyEditor from 'app/components/elements/ReplyEditor';
@@ -21,6 +22,19 @@ import {Long} from 'bytebuffer'
 import {List} from 'immutable'
 import {repLog10, parsePayoutAmount} from 'app/utils/ParsersAndFormatters';
 
+function TimeAuthorCategory({content, authorRepLog10, showTags}) {
+    return (
+        <span className="PostFull__time_author_category vcard">
+            <Tooltip t={new Date(content.created).toLocaleString()}>
+                <Icon name="clock" className="space-right" />
+                <span className="TimeAgo"><TimeAgoWrapper date={content.created} /></span>
+            </Tooltip>
+            <span> by <Author author={content.author} authorRepLog10={authorRepLog10} /></span>
+            {showTags && <span> in&nbsp;<TagList post={content} /></span>}
+        </span>
+     );
+}
+
 export default class PostFull extends React.Component {
     static propTypes = {
         // html props
@@ -32,6 +46,7 @@ export default class PostFull extends React.Component {
         username: React.PropTypes.string,
         unlock: React.PropTypes.func.isRequired,
         deletePost: React.PropTypes.func.isRequired,
+        showPromotePost: React.PropTypes.func.isRequired,
     };
 
     constructor() {
@@ -115,6 +130,14 @@ export default class PostFull extends React.Component {
         window.open('https://www.linkedin.com/shareArticle?' + q, 'Share', 'top=' + winTop + ',left=' + winLeft + ',toolbar=0,status=0,width=' + winWidth + ',height=' + winHeight);
     }
 
+    showPromotePost = () => {
+        const post_content = this.props.global.get('content').get(this.props.post);
+        if (!post_content) return
+        const author = post_content.get('author')
+        const permlink = post_content.get('permlink')
+        this.props.showPromotePost(author, permlink)
+    }
+
     render() {
         const {props: {username, post}, state: {PostFullReplyEditor, PostFullEditEditor, formId, showReply, showEdit},
             onShowReply, onShowEdit, onDeletePost} = this
@@ -176,23 +199,46 @@ export default class PostFull extends React.Component {
         const pending_payout = parsePayoutAmount(content.pending_payout_value);
         const total_payout = parsePayoutAmount(content.total_payout_value);
         const high_quality_post = pending_payout + total_payout > 10.0;
-        const showEditOption = username === author && total_payout === 0
+        const showEditOption = username === author && post_content.get('mode') != 'archived'
         const authorRepLog10 = repLog10(content.author_reputation)
 
-        const time_author_category = <span className="PostFull__time_author_category vcard">
-            <Tooltip t={new Date(content.created).toLocaleString()}>
-                <Icon name="clock" className="space-right" />
-                <span className="TimeAgo"><TimeAgoWrapper date={content.created} /></span>
-            </Tooltip>
-            <span> by <Author author={content.author} authorRepLog10={authorRepLog10} /></span>
-        </span>;
+        let post_header = <h1 className="entry-title">{content.title}</h1>
+        if(content.depth > 0) {
+            let parent_link = `/${content.category}/@${content.parent_author}/${content.parent_permlink}`;
+            let direct_parent_link
+            if(content.depth > 1) {
+                direct_parent_link = <li>
+                    <Link to={parent_link}>
+                        View the direct parent
+                    </Link>
+                </li>
+            }
+            post_header = <div className="callout">
+                <h5>You are viewing a single comment&#39;s thread from:</h5>
+                <p>
+                    {content.root_title}
+                </p>
+                <ul>
+                    <li>
+                        <Link to={content.url}>
+                            View the full context
+                        </Link>
+                    </li>
+                    {direct_parent_link}
+                </ul>
+            </div>
+        }
+
+        const archived    = post_content.get('mode') === 'archived'
+        const firstPayout = post_content.get('mode') === "first_payout"
+        const rootComment = post_content.get('depth') == 0
 
         return (
             <article className="PostFull hentry" itemScope itemType ="http://schema.org/blogPost">
                 <div className="float-right"><Voting post={post} flag /></div>
                 <div className="PostFull__header">
-                    <h1 className="entry-title">{content.title}</h1>
-                    {time_author_category}
+                    {post_header}
+                    <TimeAuthorCategory content={content} authorRepLog10={authorRepLog10} showTags />
                 </div>
                 {showEdit ?
                     renderedEditor :
@@ -201,13 +247,17 @@ export default class PostFull extends React.Component {
                     </div>
                 }
 
+                {username && firstPayout && rootComment && <div className="float-right">
+                    <button className="button hollow tiny" onClick={this.showPromotePost}>Promote</button>
+                </div>}
                 <TagList post={content} horizontal />
                 <div className="PostFull__footer row align-middle">
                     <div className="column">
-                        {time_author_category}
-                        <Voting post={post} pending_payout={content.pending_payout_value} total_payout={content.total_payout_value} cashout_time={content.cashout_time} />
+                        <TimeAuthorCategory content={content} authorRepLog10={authorRepLog10} />
+                        <Voting post={post} />
                     </div>
                     <div className="column shrink">
+                            {!archived && <Reblog author={author} permlink={permlink} />}
                             <span className="PostFull__responses">
                                 <Link to={link} title={pluralize('Responses', content.children, true)}>
                                     <Icon name="chatboxes" className="space-right" />{content.children}
@@ -254,7 +304,10 @@ export default connect(
                 type: 'delete_comment',
                 operation: {author, permlink},
                 confirm: 'Are you sure?'
-            }))
+            }));
+        },
+        showPromotePost: (author, permlink) => {
+            dispatch({type: 'global/SHOW_DIALOG', payload: {name: 'promotePost', params: {author, permlink}}});
         },
     })
 )(PostFull)

@@ -31,13 +31,15 @@ export function decode(private_key, memo) {
 
     // remove varint length prefix
     const mbuf = ByteBuffer.fromBinary(memo.toString('binary'), ByteBuffer.DEFAULT_CAPACITY, ByteBuffer.LITTLE_ENDIAN)
-    const len = mbuf.readVarint32() // remove the varint length prefix
-    const remaining = mbuf.remaining()
-    if(len !== remaining) // warn
-        console.error(`Memo's length prefix ${len} does not match remaining bytes ${remaining}`)
-
-    memo = new Buffer(mbuf.toString('binary'), 'binary').toString('utf-8')
-    return memo
+    try {
+        mbuf.mark()
+        return mbuf.readVString()
+    } catch(e) {
+        mbuf.reset()
+        // Sender did not length-prefix the memo
+        memo = new Buffer(mbuf.toString('binary'), 'binary').toString('utf-8')
+        return memo
+    }
 }
 
 /**
@@ -57,16 +59,13 @@ export function encode(private_key, public_key, memo, testNonce) {
     assert(private_key, 'private_key is required')
     assert(public_key, 'public_key is required')
 
-    // append the length prefix
-    memo = new Buffer(memo, 'utf-8')
-    const mbuf = ByteBuffer.fromBinary(memo.toString('binary'), ByteBuffer.DEFAULT_CAPACITY, ByteBuffer.LITTLE_ENDIAN)
-    mbuf.writeVarint32(memo.length)
-    mbuf.append(memo, 'binary')
-    memo = mbuf.copy(0, mbuf.offset).toString('binary')
+    const mbuf = new ByteBuffer(ByteBuffer.DEFAULT_CAPACITY, ByteBuffer.LITTLE_ENDIAN)
+    mbuf.writeVString(memo)
+    memo = new Buffer(mbuf.copy(0, mbuf.offset).toBinary(), 'binary')
 
     const {nonce, message, checksum} = Aes.encrypt(private_key, public_key, memo, testNonce)
     memo = encMemo.fromObject({
-        from: private_key.toPublicKey().toString(),
+        from: private_key.toPublicKey(),
         to: public_key,
         nonce,
         check: checksum,

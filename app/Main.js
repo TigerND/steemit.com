@@ -1,5 +1,8 @@
-require('./assets/stylesheets/app.scss');
-require('whatwg-fetch');
+import 'babel-core/register';
+import 'babel-polyfill';
+import 'whatwg-fetch';
+import './assets/stylesheets/app.scss';
+
 import Iso from 'iso';
 import universalRender from 'shared/UniversalRender';
 import ConsoleExports from './utils/ConsoleExports';
@@ -35,11 +38,6 @@ try {
 } catch (e) {
     console.error(e)
 }
-
-// redux-form performance work-around https://github.com/erikras/redux-form/issues/529
-// window.reduxFormPerformFix = fields => {
-//     Object.keys(fields).forEach(el => {fields[el].onChange = e => {fields[el].value = e.target.value}})
-// }
 
 console.log('Google Analytics');
 (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
