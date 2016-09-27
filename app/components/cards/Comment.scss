@@ -13,11 +13,15 @@
 
 .Comment__Userpic-small {
   position: relative;
-  top: 4px;
+  left: -2px;
   @include hide-for(medium);
   path {
     fill: $dark_gray;
   }
+}
+
+.Comment .highlighted {
+  background: #FFD;
 }
 
 .Comment.collapsed {

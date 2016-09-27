@@ -4,13 +4,10 @@
   left: 0;
   width: 100%;
   z-index: 100;
+  background-color: $white;
   h3 {
     padding-left: 1rem;
     margin-bottom: 0;
-  }
-  .header {
-    background-color: $white;
-    border-bottom: 1px solid $light-gray;
   }
   .menu {
     background-color: $white;
@@ -18,7 +15,7 @@
     .hamburger {
       @include hamburger();
       position: relative;
-      top: 0.2rem;
+      top: 2px;
     }
   }
   ul.menu > li.toggle-menu > a {
@@ -36,6 +33,11 @@
 }
 
 .Header__top {
+  background-color: $white;
+  border-bottom: 1px solid $light-gray;
+  ul > li.Header__top-logo {
+    padding: .35rem 0 .35rem 0;
+  }
   ul > li.delim {
     color: $medium-gray;
   }
@@ -82,22 +84,41 @@ ul > li > .button {
 //}
 
 .Header__sub-nav {
+  position: relative;
   padding: 0;
   background-color: $white;
   border-bottom: 1px solid $light-gray;
-  a {
+  transition: all .3s;
+  z-index: -1;
+  li {
+    line-height: 1rem;
+    padding: 1.2rem 0 1.2rem 0;
+    margin: 0 0 0 2rem;
+    }
+  // No margin adjustments for first child element in menu items
+  li:first-child {
+    margin: 0 0 0 0;
+  }
+  li > a {
     color: $dark-gray;
     background-color: $white;
     border-bottom: 1px solid transparent;
+    font-size: 1rem;
+    line-height: 0;
+    padding: 0;
   }
   a.active {
     color: $black;
     //border-bottom: 1px solid $dark-gray;
   }
-  .Header__sub-nav--first > a {
-    padding-left: 0;
-  }
 }
+
+
+.Header__sub-nav.hidden {
+  // display: none;
+  margin-top: -42px;
+}
+
 
 .Header__topic {
   background-color: $white;

@@ -32,7 +32,7 @@ export default class SignUp extends React.Component {
             <div className="row">
                 <div className="column">
                     <h3>Sign Up</h3>
-                    <p>Steemit funds each account with over $5 worth of Steem Power; to prevent abuse, we
+                    <p>Steemit funds each account with over {this.props.signup_bonus} worth of Steem Power; to prevent abuse, we
                         require new users to login via social media.<br />
                         Your personal information will be kept <a href="/privacy.html" target="_blank">private</a>.
                     </p>
@@ -55,7 +55,7 @@ export default class SignUp extends React.Component {
                 </div>
                 <div className="column large-8">
                     <a href="/connect/reddit" className="button SignUp--reddit-button">Continue with Reddit</a>
-                    <br /><span className="secondary">(requires positive Reddit comment karma)</span>
+                    <br /><span className="secondary">(requires 5 or more Reddit comment karma)</span>
                 </div>
             </div>
             <div className="row">
@@ -80,6 +80,7 @@ export default class SignUp extends React.Component {
 export default connect(
     state => {
         return {
+            signup_bonus: state.offchain.get('signup_bonus'),
             serverBusy: state.offchain.get('serverBusy')
         };
     }

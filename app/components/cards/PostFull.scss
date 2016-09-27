@@ -50,13 +50,19 @@
 .PostFull__body {
   padding: 1rem 0 2rem 0;
   clear: left;
+
   font-family: 'Source Serif Pro', serif;
   font-size: 120%;
   line-height: 150%;
+
   overflow-wrap: break-word;
   word-wrap: break-word;
   word-break: break-word;
   hyphens: auto;
+
+  table td {
+    word-break: normal; // issue #146
+  }
 
   p {
     font-size: 100%;
@@ -70,20 +76,14 @@
     max-height: none;
   }
 
-  .videoWrapper > iframe {
+  iframe {
     max-width: 100%;
-  }
-
-  /* Small only */
-  @media screen and (max-width: 30em) {
-    iframe {
-      max-width: 100%;
-      max-height: 75vw;
-    }
+    max-height: 75vw;
   }
 }
 
 .PostFull__footer {
+  clear: right;
   line-height: 2rem;
   font-size: 94%;
   svg path, svg polygon {
@@ -94,10 +94,6 @@
     font-size: 94%;
     font-weight: 600;
     @include hoverUnderline;
-  }
-  svg {
-    position: relative;
-    top: 2px;
   }
   .FormattedAsset {
     font-size: 110%;
@@ -111,6 +107,12 @@
   }
   span {
     white-space: normal;
+  }
+
+  .Reblog__button {
+    padding-right: 1rem;
+    margin-right: 1rem;
+    border-right: 1px solid $medium-gray;
   }
 }
 
@@ -131,11 +133,18 @@
   font-size: 80%;
 }
 
+.Author__dropdown {
+  padding: 1rem;
+  > a {
+    @include hoverUnderline;
+  }
+}
+
 /* Small only */
 @media screen and (max-width: 39.9375em) {
   .Post {
     width: 100%;
-    overflow-x: hidden;
+    overflow: hidden;
   }
   .PostFull__footer > .column {
     -webkit-box-flex: 0;

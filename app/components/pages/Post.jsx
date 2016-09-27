@@ -17,9 +17,11 @@ class Post extends React.Component {
 
     static propTypes = {
         global: React.PropTypes.object.isRequired,
-        routeParams: React.PropTypes.object.isRequired,
-        location: React.PropTypes.object.isRequired,
+        post: React.PropTypes.string,
+        routeParams: React.PropTypes.object,
+        location: React.PropTypes.object,
         showSignUp: React.PropTypes.func.isRequired,
+        signup_bonus: React.PropTypes.string,
         current_user: React.PropTypes.object,
     };
     constructor() {
@@ -34,14 +36,6 @@ class Post extends React.Component {
             const comments_el = document.getElementById('comments');
             if (comments_el) comments_el.scrollIntoView();
         }
-
-        // Jump to comment via hash (note: comment element's id has a hash(#) in it)
-        const anchor_link = window.location.hash;
-        const comment_el = anchor_link ? document.getElementById(anchor_link) : null;
-        if (comment_el) {
-            comment_el.scrollIntoView(true);
-            document.body.scrollTop -= 200;
-        }
     }
 
     toggleNegativeReplies = () => {
@@ -54,19 +48,44 @@ class Post extends React.Component {
         this.setState({commentHidden: true})
     }
 
+    showAnywayClick = () => {
+        this.setState({showAnyway: true})
+    }
+
     render() {
         const {showSignUp} = this
-        const {current_user, following} = this.props
-        const {showNegativeComments, commentHidden} = this.state
-        const rout_params = this.props.routeParams;
+        const {current_user, following, signup_bonus} = this.props
+        const {showNegativeComments, commentHidden, showAnyway} = this.state
         let g = this.props.global;
-        let post = rout_params.username + '/' + rout_params.slug;
+        let post = this.props.post;
+        if (!post) {
+            const route_params = this.props.routeParams;
+            post = route_params.username + '/' + route_params.slug;
+        }
         const dis = g.get('content').get(post);
         if (!dis) return null;
+
+        if(!showAnyway) {
+            const {authorRepLog10, netVoteSign} = dis.get('stats').toJS()
+            if(authorRepLog10 < 1 || netVoteSign < 0) {
+                return (
+                    <div className="Post">
+                        <div className="row">
+                            <div className="column">
+                                <div className="PostFull">
+                                    <p onClick={this.showAnywayClick}>This post was hidden due to low ratings. <button style={{marginBottom: 0}} className="button hollow tiny float-right" onClick={this.showAnywayClick}>Show</button></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )
+            }
+        }
+
         const replies = dis.get('replies').toJS();
 
         let sort_order = 'trending';
-        if( this.props.location.query.sort )
+        if( this.props.location && this.props.location.query.sort )
            sort_order = this.props.location.query.sort;
 
         sortComments( g, replies, sort_order );
@@ -100,13 +119,11 @@ class Post extends React.Component {
         );
 
 
-        // console.log( rout_params );
-
         let sort_orders = [ 'trending', 'active', 'created', 'updated' ];
         let sort_labels = [ 'trending', 'active', 'new', 'updated' ];
         let sort_menu = [];
 
-        let selflink = '/' + rout_params.category +'/@'+ rout_params.username + '/' + rout_params.slug;
+        let selflink = `/${dis.get('category')}/@${post}`;
         for( let o = 0; o < sort_orders.length; ++o ){
             sort_menu.push({
                 value: sort_orders[o],
@@ -120,6 +137,7 @@ class Post extends React.Component {
                 <SvgImage name="404" width="640px" height="480px" />
             </center>
 
+
         return (
             <div className="Post">
                 <div className="row">
@@ -131,7 +149,7 @@ class Post extends React.Component {
                     <div className="column">
                       <div className="Post__promo">
                           Authors get paid when people like you upvote their post. <br/>
-                          If you enjoyed what you read here, earn $5 of Steem Power <br />
+                          If you enjoyed what you read here, earn {signup_bonus} of Steem Power <br />
                           when you <a onClick={showSignUp}>sign up</a> and vote for it.
                       </div>
                     </div>
@@ -154,28 +172,25 @@ class Post extends React.Component {
         );
     }
 }
-//<Comment key={data.id} discussion={data}/>
 
-module.exports = {
-path: '/(:category/)@:username/:slug',
-    component: connect(state => {
-        const current_user = state.user.get('current')
-        let following
-        if(current_user) {
-            const key = ['follow', 'get_following', current_user, 'result']
-            following = state.global.getIn(key, List())
-        }
-        return {
-            global: state.global,
-            current_user,
-            following,
-        }
-    },
-    dispatch => ({
-        showSignUp: () => {
-            localStorage.setItem('redirect', window.location.pathname);
-            dispatch(user.actions.showSignUp())
-        }
-    })
-    )(Post)
-};
+export default connect(state => {
+    const current_user = state.user.get('current')
+    let following
+    if(current_user) {
+        const key = ['follow', 'get_following', current_user.get('username'), 'result']
+        following = state.global.getIn(key, List())
+    }
+    return {
+        global: state.global,
+        signup_bonus: state.offchain.get('signup_bonus'),
+        current_user,
+        following,
+    }
+},
+dispatch => ({
+    showSignUp: () => {
+        localStorage.setItem('redirect', window.location.pathname);
+        dispatch(user.actions.showSignUp())
+    }
+})
+)(Post);

@@ -1,8 +1,5 @@
 import {fromJS, Map} from 'immutable';
-import {PropTypes} from 'react';
 import createModule from 'redux-modules';
-
-const {string, object, array, bool, func, oneOfType, any} = PropTypes
 
 export default createModule({
     name: 'transaction',
@@ -14,11 +11,6 @@ export default createModule({
     transformations: [
         {
             action: 'CONFIRM_OPERATION',
-            payloadTypes: {
-                operation: object,
-                confirm: oneOfType([string, func]),
-                errorCallback: func,
-            },
             reducer: (state, {payload}) => {
                 const operation = fromJS(payload.operation)
                 const confirm = payload.confirm
@@ -36,16 +28,6 @@ export default createModule({
         {
             // An error will end up in QUEUE
             action: 'BROADCAST_OPERATION',
-            payloadTypes: {
-                type: string.isRequired,
-                operation: object.isRequired,
-                confirm: oneOfType([string, func]), // confirmation message
-                successCallback: func,
-                errorCallback: func,
-                keys: array,
-                username: string,
-                password: string,
-            },
             reducer: (state) => {//, {payload: {type, operation, keys}}
                 // See TransactionSaga.js
                 return state
@@ -54,25 +36,11 @@ export default createModule({
         {
             // An error will end up in QUEUE
             action: 'UPDATE_AUTHORITIES',
-            payloadTypes: {
-                accountName: string.isRequired,
-                signingKey: string, // Required unless auths has password or WIF
-                auths: array.isRequired, // Auths may contain the signing key
-                twofa: bool,
-                onSuccess: func.isRequired,
-                onError: func.isRequired,
-            },
             reducer: (state) => state,
         },
         {
             action: 'ERROR',
-            payloadTypes: {
-                operations: array.isRequired,
-                keys: array.isRequired,
-                error: object.isRequired, /* only errors for now */
-                errorCallback: func,
-            },
-            reducer: (state, {payload: {operations, keys, error, errorCallback}}) => {
+            reducer: (state, {payload: {operations, error, errorCallback}}) => {
                 let errorStr = error.toString()
                 let errorKey = 'Transaction broadcast error.'
                 for (const [type/*, operation*/] of operations) {
@@ -105,10 +73,16 @@ export default createModule({
                         state = state.setIn(['TransactionError', type], fromJS({key: errorKey, exception: errorStr}))
                     } else {
                         if (error.message) {
+                            // Depends on FC_ASSERT formatting
+                            // https://github.com/steemit/steemit.com/issues/222
                             const err_lines = error.message.split('\n');
                             if (err_lines.length > 2) {
                                 errorKey = err_lines[1];
-                                errorStr = `Transaction failed: ${err_lines[1]}`;
+                                const txt = errorKey.split(': ')
+                                if(txt.length && txt[txt.length - 1].trim() !== '') {
+                                    errorKey = errorStr = txt[txt.length - 1]
+                                } else
+                                    errorStr = `Transaction failed: ${err_lines[1]}`;
                             }
                         }
                         if (errorStr.length > 200) errorStr = errorStr.substring(0, 200);
@@ -123,17 +97,12 @@ export default createModule({
         },
         {
             action: 'DELETE_ERROR',
-            payloadTypes: {key: string.isRequired},
             reducer: (state, {payload: {key}}) => {
                 return state.deleteIn(['errors', key]);
             }
         },
         {
             action: 'SET',
-            payloadTypes: {
-                key: oneOfType([array, string]).isRequired,
-                value: any,
-            },
             reducer: (state, {payload: {key, value}}) => {
                 key = Array.isArray(key) ? key : [key]
                 return state.setIn(key, fromJS(value))
@@ -141,9 +110,6 @@ export default createModule({
         },
         {
             action: 'REMOVE',
-            payloadTypes: {
-                key: oneOfType([array, string]).isRequired,
-            },
             reducer: (state, {payload: {key}}) => {
                 key = Array.isArray(key) ? key : [key]
                 return state.removeIn(key)

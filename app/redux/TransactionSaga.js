@@ -99,20 +99,25 @@ function* broadcastOperation({payload:
         return
     }
     const payload = {operations: [[type, operation]], keys, username, successCallback, errorCallback}
-    if (!keys || keys.length === 0) {
-        payload.keys = []
-        // user may already be logged in, or just enterend a signing passowrd or wif
-        const signingKey = yield call(findSigningKey, {opType: type, username, password})
-        if (signingKey)
-            payload.keys.push(signingKey)
-        else {
-            if (!password) {
-                yield put(user.actions.showLogin({operation: {type, operation, username, successCallback, errorCallback, saveLogin: true}}))
-                return
+    try {
+        if (!keys || keys.length === 0) {
+            payload.keys = []
+            // user may already be logged in, or just enterend a signing passowrd or wif
+            const signingKey = yield call(findSigningKey, {opType: type, username, password})
+            if (signingKey)
+                payload.keys.push(signingKey)
+            else {
+                if (!password) {
+                    yield put(user.actions.showLogin({operation: {type, operation, username, successCallback, errorCallback, saveLogin: true}}))
+                    return
+                }
             }
         }
+        yield call(broadcast, {payload})
+    } catch(error) {
+        console.error('TransactionSage', error)
+        if(errorCallback) errorCallback(error.toString())
     }
-    yield call(broadcast, {payload})
 }
 
 function* broadcast({payload: {operations, keys, username, successCallback, errorCallback}}) {
@@ -176,16 +181,18 @@ function* broadcast({payload: {operations, keys, username, successCallback, erro
             }
             const config = operation.__config
             if (config && config.successMessage) {
-                // TODO replace assert with notice dialog after merge with main branch
-                alert(config.successMessage)
-                yield put(tr.actions.set({key: 'successMessage', value: config.successMessage}))
+                yield put({type: 'ADD_NOTIFICATION', payload: {
+                    key: "trx_" + Date.now(),
+                    message: config.successMessage,
+                    dismissAfter: 5000
+                }})
             }
         }
         if (successCallback) try { successCallback() } catch (error) { console.error(error) }
     } catch (error) {
         console.error('TransactionSaga\tbroadcast', error)
         // status: error
-        yield put(tr.actions.error({operations, keys, error, errorCallback}))
+        yield put(tr.actions.error({operations, error, errorCallback}))
         for (const [type, operation] of operations) {
             if (hook['error_' + type]) {
                 try {
@@ -264,7 +271,7 @@ import secureRandom from 'secure-random'
 function* preBroadcast_comment({operation, username}) {
     if (!operation.author) operation.author = username
     let permlink = operation.permlink
-    const {author, __config: {originalPost, autoVote}} = operation
+    const {author, __config: {originalPost, autoVote, comment_options}} = operation
     const {parent_author = '', parent_permlink = operation.category } = operation
     const {title} = operation
     let {body} = operation
@@ -299,15 +306,35 @@ function* preBroadcast_comment({operation, username}) {
         body: new Buffer(body2, 'utf-8'),
     }
 
-    // For immediate UI updates call g.actions.receiveComment(op).  This requires a rollback.
-    // Show the original body (not the patch).
-    // yield put(g.actions.receiveComment({...op, body: new Buffer(body, 'utf-8')}))
-    if(!autoVote) return op
-    const vote = {voter: op.author, author: op.author, permlink: op.permlink, weight: 10000}
-    return [
+    const comment_op = [
         ['comment', op],
-        ['vote', vote],
     ]
+
+    if(autoVote) {
+        const vote = {voter: op.author, author: op.author, permlink: op.permlink, weight: 10000}
+        comment_op.push(['vote', vote])
+    }
+
+    if(comment_options) {
+        const {
+            max_accepted_payout = "1000000.000 SBD",
+            percent_steem_dollars = 10000, // 10000 === 100%
+            allow_votes = true,
+            allow_curation_rewards = true,
+        } = comment_options
+        comment_op.push(
+            ['comment_options', {
+                author,
+                permlink,
+                max_accepted_payout,
+                percent_steem_dollars,
+                allow_votes,
+                allow_curation_rewards,
+                extensions: comment_options.extensions ? comment_options.extensions : []
+            }]
+        )
+    }
+    return comment_op
 }
 
 function* createPermlink(title, author, parent_author, parent_permlink) {

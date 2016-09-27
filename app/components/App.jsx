@@ -75,7 +75,7 @@ class App extends React.Component {
 
     render() {
         const {location, params, children, loading, flash, showSignUp, new_visitor,
-            depositSteem} = this.props;
+            depositSteem, signup_bonus} = this.props;
         const lp = false; //location.pathname === '/';
         const params_keys = Object.keys(params);
         const ip = location.pathname === '/' || (params_keys.length === 2 && params_keys[0] === 'order' && params_keys[1] === 'category');
@@ -141,7 +141,7 @@ class App extends React.Component {
                             <br />
                             <br />
                             <div className="tag3">
-                                <b>Get $5 of Steem Power when you sign up today.</b>
+                                <b>Get {signup_bonus} of Steem Power when you sign up today.</b>
                             </div>
                         </div>
                     </div>
@@ -163,6 +163,7 @@ class App extends React.Component {
                     <li><a href="/change_password" onClick={this.navigate}>Change Account Password</a></li>
                     <li><a href="https://steemit.chat/home" target="_blank">Steemit Chat&nbsp;<Icon name="extlink"/></a></li>
                     <li className="last"><a onClick={this.navigate} href="/~witnesses">Witnesses</a></li>
+                    <li className="last"><a onClick={this.navigate} href="/@steemitjobs">Careers</a></li>
                 </ul>
                 <ul className="vertical menu">
                     <li><a href="/privacy.html" onClick={this.navigate} rel="nofollow">Privacy Policy</a></li>
@@ -186,6 +187,7 @@ App.propTypes = {
     error: React.PropTypes.string,
     children: AppPropTypes.Children,
     location: React.PropTypes.object,
+    signup_bonus: React.PropTypes.string,
     loading: React.PropTypes.bool,
     loginUser: React.PropTypes.func.isRequired,
     depositSteem: React.PropTypes.func.isRequired,
@@ -196,6 +198,7 @@ export default connect(
         return {
             error: state.app.get('error'),
             flash: state.offchain.get('flash'),
+            signup_bonus: state.offchain.get('signup_bonus'),
             loading: state.app.get('loading'),
             new_visitor: !state.user.get('current') &&
                 !state.offchain.get('user') &&
